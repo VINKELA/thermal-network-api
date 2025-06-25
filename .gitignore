@@ -1,0 +1,95 @@
+# Django
+*.pyc
+*$py.class
+__pycache__/
+*.sqlite3
+*.sql
+*.pot
+*.py[co]
+
+# Virtual environment
+venv/
+.env/
+.venv/
+ENV/
+env/
+
+# Database
+*.db
+*.db.sqlite3
+db.sqlite3
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+local_settings.py
+npm-debug.log*
+
+# Static files
+/staticfiles/
+/mediafiles/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.prod
+.env.staging
+
+# Documentation
+docs/_build/
+
+# PyInstaller
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Package manager files
+pip-wheel-metadata/
+*.egg-info/
+*.egg
+/dist/
+/build/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Testing
+.pytest_cache/
+
+# Media directory (user uploaded files)
+/media/
+
+# Translations
+*.mo
+
+# SQL dump files
+*.dump
+*.backup
+
+# Vim swap files
+*.swp
+*.swo
