@@ -8,9 +8,7 @@ __pycache__/
 *.py[co]
 
 # Virtual environment
-venv/
 .env/
-.venv/
 ENV/
 env/
 
