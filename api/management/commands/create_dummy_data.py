@@ -26,9 +26,9 @@ class Command(BaseCommand):
         self.create_buildings(project)
         
         # 5. Create network infrastructure
-        self.create_pumps(project)
-        self.create_valves(project)
-        self.create_heat_pumps(project)
+        #self.create_pumps(project)
+        #self.create_valves(project)
+        #self.create_heat_pumps(project)
         self.create_thermal_storage(project)
         
         self.stdout.write(self.style.SUCCESS('\nSuccessfully created all infrastructure components'))

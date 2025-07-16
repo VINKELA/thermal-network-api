@@ -1,0 +1,4 @@
+id,algorithm,name,distance_threshold,description,is_default,network_id,parameters,total_edge_length
+1,delaunay,"McMaster University Thermal Network Hamilton, Ontario, Canada Thermal Network - Delaunay - 420bce77",,,0,1,"""{}""",5044.370428900249
+2,knn,"McMaster University Thermal Network Hamilton, Ontario, Canada Thermal Network - KNN - e5f542b6",,,0,1,"""{\""k\"": 3}""",5416.560559272828
+3,distance_threshold,"McMaster University Thermal Network Hamilton, Ontario, Canada Thermal Network - Distance Threshold - 3c7a0908",,,0,1,"""{\""d_max\"": 170.0}""",924.0853768415756

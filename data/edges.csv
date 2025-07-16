@@ -1,0 +1,55 @@
+id,name,length,created_at,updated_at,network_id,end_node_id,start_node_id,is_default,edge_algorithm_id
+1,Bistro in Mary Keyes Residence-Arthur Bourns Building (ABB)-2-8,219.11931022047654,2025-07-10 00:31:52.319556,2025-07-10 00:31:52.319589,1,9,3,0,1
+2,Bistro in Mary Keyes Residence-David Braley Athletic Centre (DBAC)-2-6,549.7981148405175,2025-07-10 00:31:52.324547,2025-07-10 00:31:52.324567,1,7,3,0,1
+3,Health Sciences Centre (HSC)-John Hodgins Engineering Building (JHE)-3-4,241.55829146946328,2025-07-10 00:31:52.328429,2025-07-10 00:31:52.328449,1,5,4,0,1
+4,Phoenix Craft House and Grill-Burke Science Building (BSB)-1-7,88.86636958162973,2025-07-10 00:31:52.332235,2025-07-10 00:31:52.332255,1,8,2,0,1
+5,McMaster Nuclear Reactor (MNR)-Bistro in Mary Keyes Residence-0-2,129.19478220067973,2025-07-10 00:31:52.336528,2025-07-10 00:31:52.336543,1,3,1,0,1
+6,McMaster Nuclear Reactor (MNR)-John Hodgins Engineering Building (JHE)-0-4,127.11160950678129,2025-07-10 00:31:52.340396,2025-07-10 00:31:52.340416,1,5,1,0,1
+7,McMaster Museum of Art-David Braley Athletic Centre (DBAC)-5-6,257.70761930100076,2025-07-10 00:31:52.344631,2025-07-10 00:31:52.344650,1,7,6,0,1
+8,Health Sciences Centre (HSC)-McMaster Museum of Art-3-5,276.612550887164,2025-07-10 00:31:52.348132,2025-07-10 00:31:52.348147,1,6,4,0,1
+9,McMaster Nuclear Reactor (MNR)-Burke Science Building (BSB)-0-7,155.66918657834657,2025-07-10 00:31:52.351340,2025-07-10 00:31:52.351354,1,8,1,0,1
+10,Phoenix Craft House and Grill-David Braley Athletic Centre (DBAC)-1-6,407.4292983430889,2025-07-10 00:31:52.354696,2025-07-10 00:31:52.354724,1,7,2,0,1
+11,John Hodgins Engineering Building (JHE)-Burke Science Building (BSB)-4-7,175.4303913740396,2025-07-10 00:31:52.358466,2025-07-10 00:31:52.358486,1,8,5,0,1
+12,Health Sciences Centre (HSC)-Burke Science Building (BSB)-3-7,317.1275525470732,2025-07-10 00:31:52.362764,2025-07-10 00:31:52.362783,1,8,4,0,1
+13,McMaster Nuclear Reactor (MNR)-Phoenix Craft House and Grill-0-1,202.61715956146054,2025-07-10 00:31:52.366470,2025-07-10 00:31:52.366484,1,2,1,0,1
+14,Health Sciences Centre (HSC)-David Braley Athletic Centre (DBAC)-3-6,531.4439924298308,2025-07-10 00:31:52.370034,2025-07-10 00:31:52.370050,1,7,4,0,1
+15,Health Sciences Centre (HSC)-Arthur Bourns Building (ABB)-3-8,407.91160274263683,2025-07-10 00:31:52.373444,2025-07-10 00:31:52.373461,1,9,4,0,1
+16,Phoenix Craft House and Grill-McMaster Museum of Art-1-5,277.0892963939969,2025-07-10 00:31:52.377447,2025-07-10 00:31:52.377466,1,6,2,0,1
+17,McMaster Museum of Art-Burke Science Building (BSB)-5-7,246.89290838078358,2025-07-10 00:31:52.381232,2025-07-10 00:31:52.381259,1,8,6,0,1
+18,McMaster Nuclear Reactor (MNR)-Arthur Bourns Building (ABB)-0-8,117.37734827114254,2025-07-10 00:31:52.384932,2025-07-10 00:31:52.384948,1,9,1,0,1
+19,Phoenix Craft House and Grill-Bistro in Mary Keyes Residence-1-2,142.919488169333,2025-07-10 00:31:52.388330,2025-07-10 00:31:52.388361,1,3,2,0,1
+20,John Hodgins Engineering Building (JHE)-Arthur Bourns Building (ABB)-4-8,172.4935561008045,2025-07-10 00:31:52.392304,2025-07-10 00:31:52.392322,1,9,5,0,1
+21,McMaster Nuclear Reactor (MNR)-Arthur Bourns Building (ABB),117.37734827114254,2025-07-10 01:10:57.508704,2025-07-10 01:10:57.508746,1,9,1,0,2
+22,McMaster Nuclear Reactor (MNR)-Bistro in Mary Keyes Residence,129.19478220067973,2025-07-10 01:10:57.519969,2025-07-10 01:10:57.519992,1,3,1,0,2
+23,McMaster Nuclear Reactor (MNR)-John Hodgins Engineering Building (JHE),127.11160950678129,2025-07-10 01:10:57.524143,2025-07-10 01:10:57.524160,1,5,1,0,2
+24,Phoenix Craft House and Grill-Burke Science Building (BSB),88.86636958162973,2025-07-10 01:10:57.529401,2025-07-10 01:10:57.529422,1,8,2,0,2
+25,Phoenix Craft House and Grill-Bistro in Mary Keyes Residence,142.919488169333,2025-07-10 01:10:57.551906,2025-07-10 01:10:57.551925,1,3,2,0,2
+26,Phoenix Craft House and Grill-McMaster Nuclear Reactor (MNR),202.61715956146054,2025-07-10 01:10:57.557923,2025-07-10 01:10:57.558004,1,1,2,0,2
+27,Bistro in Mary Keyes Residence-McMaster Nuclear Reactor (MNR),129.19478220067973,2025-07-10 01:10:57.563605,2025-07-10 01:10:57.563627,1,1,3,0,2
+28,Bistro in Mary Keyes Residence-Phoenix Craft House and Grill,142.919488169333,2025-07-10 01:10:57.568148,2025-07-10 01:10:57.568170,1,2,3,0,2
+29,Bistro in Mary Keyes Residence-Arthur Bourns Building (ABB),219.11931022047654,2025-07-10 01:10:57.572061,2025-07-10 01:10:57.572083,1,9,3,0,2
+30,Health Sciences Centre (HSC)-McMaster Museum of Art,276.612550887164,2025-07-10 01:10:57.576963,2025-07-10 01:10:57.576985,1,6,4,0,2
+31,Health Sciences Centre (HSC)-John Hodgins Engineering Building (JHE),241.55829146946328,2025-07-10 01:10:57.581981,2025-07-10 01:10:57.582008,1,5,4,0,2
+32,Health Sciences Centre (HSC)-Burke Science Building (BSB),317.1275525470732,2025-07-10 01:10:57.585710,2025-07-10 01:10:57.585777,1,8,4,0,2
+33,John Hodgins Engineering Building (JHE)-McMaster Nuclear Reactor (MNR),127.11160950678129,2025-07-10 01:10:57.589261,2025-07-10 01:10:57.589280,1,1,5,0,2
+34,John Hodgins Engineering Building (JHE)-Burke Science Building (BSB),175.4303913740396,2025-07-10 01:10:57.593209,2025-07-10 01:10:57.593231,1,8,5,0,2
+35,John Hodgins Engineering Building (JHE)-Arthur Bourns Building (ABB),172.4935561008045,2025-07-10 01:10:57.597756,2025-07-10 01:10:57.597775,1,9,5,0,2
+36,McMaster Museum of Art-David Braley Athletic Centre (DBAC),257.70761930100076,2025-07-10 01:10:57.601572,2025-07-10 01:10:57.601589,1,7,6,0,2
+37,McMaster Museum of Art-Health Sciences Centre (HSC),276.612550887164,2025-07-10 01:10:57.605174,2025-07-10 01:10:57.605192,1,4,6,0,2
+38,McMaster Museum of Art-Burke Science Building (BSB),246.89290838078358,2025-07-10 01:10:57.609225,2025-07-10 01:10:57.609243,1,8,6,0,2
+39,David Braley Athletic Centre (DBAC)-McMaster Museum of Art,257.70761930100076,2025-07-10 01:10:57.613669,2025-07-10 01:10:57.613693,1,6,7,0,2
+40,David Braley Athletic Centre (DBAC)-Burke Science Building (BSB),431.60011116650975,2025-07-10 01:10:57.618120,2025-07-10 01:10:57.618145,1,8,7,0,2
+41,David Braley Athletic Centre (DBAC)-Phoenix Craft House and Grill,407.4292983430889,2025-07-10 01:10:57.622185,2025-07-10 01:10:57.622206,1,2,7,0,2
+42,Burke Science Building (BSB)-Phoenix Craft House and Grill,88.86636958162973,2025-07-10 01:10:57.644532,2025-07-10 01:10:57.644554,1,2,8,0,2
+43,Burke Science Building (BSB)-John Hodgins Engineering Building (JHE),175.4303913740396,2025-07-10 01:10:57.650148,2025-07-10 01:10:57.650186,1,5,8,0,2
+44,Burke Science Building (BSB)-McMaster Nuclear Reactor (MNR),155.66918657834657,2025-07-10 01:10:57.656477,2025-07-10 01:10:57.656511,1,1,8,0,2
+45,Arthur Bourns Building (ABB)-McMaster Nuclear Reactor (MNR),117.37734827114254,2025-07-10 01:10:57.662044,2025-07-10 01:10:57.662065,1,1,9,0,2
+46,Arthur Bourns Building (ABB)-Bistro in Mary Keyes Residence,219.11931022047654,2025-07-10 01:10:57.666579,2025-07-10 01:10:57.666614,1,3,9,0,2
+47,Arthur Bourns Building (ABB)-John Hodgins Engineering Building (JHE),172.4935561008045,2025-07-10 01:10:57.671514,2025-07-10 01:10:57.671547,1,5,9,0,2
+48,McMaster Nuclear Reactor (MNR)-Bistro in Mary Keyes Residence-0-2,129.19478220067973,2025-07-10 01:31:07.718887,2025-07-10 01:31:07.718912,1,3,1,0,3
+49,McMaster Nuclear Reactor (MNR)-John Hodgins Engineering Building (JHE)-0-4,127.11160950678129,2025-07-10 01:31:07.723827,2025-07-10 01:31:07.723847,1,5,1,0,3
+50,McMaster Nuclear Reactor (MNR)-Burke Science Building (BSB)-0-7,155.66918657834657,2025-07-10 01:31:07.729032,2025-07-10 01:31:07.729052,1,8,1,0,3
+51,McMaster Nuclear Reactor (MNR)-Arthur Bourns Building (ABB)-0-8,117.37734827114254,2025-07-10 01:31:07.733686,2025-07-10 01:31:07.733707,1,9,1,0,3
+52,Phoenix Craft House and Grill-Bistro in Mary Keyes Residence-1-2,142.919488169333,2025-07-10 01:31:07.738324,2025-07-10 01:31:07.738345,1,3,2,0,3
+53,Phoenix Craft House and Grill-Burke Science Building (BSB)-1-7,88.86636958162973,2025-07-10 01:31:07.742510,2025-07-10 01:31:07.742527,1,8,2,0,3
+54,Bistro in Mary Keyes Residence-Burke Science Building (BSB)-2-7,162.94659253366277,2025-07-10 01:31:07.746063,2025-07-10 01:31:07.746081,1,8,3,0,3

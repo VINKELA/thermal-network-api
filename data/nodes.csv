@@ -1,0 +1,10 @@
+id,latitude,longitude,name,node_type,network_id
+1,43.261251236183504,-79.92157852735507,McMaster Nuclear Reactor (MNR),producer,1
+2,43.2629541330204,-79.92068808183345,Phoenix Craft House and Grill,producer,1
+3,43.26231520883189,-79.9222195588532,Bistro in Mary Keyes Residence,producer,1
+4,43.260336751767895,-79.91728704080425,Health Sciences Centre (HSC),consumer,1
+5,43.260657094019884,-79.92023747071741,John Hodgins Engineering Building (JHE),consumer,1
+6,43.262824359990425,-79.91727077197686,McMaster Museum of Art,consumer,1
+7,43.26508984613477,-79.91659951615942,David Braley Athletic Centre (DBAC),consumer,1
+8,43.262234653258815,-79.9202102900079,Burke Science Building (BSB),consumer,1
+9,43.260346100438895,-79.92232437540929,Arthur Bourns Building (ABB),consumer,1
