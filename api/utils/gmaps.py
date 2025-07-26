@@ -2,7 +2,7 @@ import googlemaps
 from django.conf import settings
 from datetime import datetime
 
-gmaps = googlemaps.Client(key="AIzaSyBO5jrMOXJIgYHKgb1v0Et6azV_dieaX1I")
+gmaps = googlemaps.Client(key="AIzaSyCaXWRoAPR8EvJ8FhqpZRTWMo8aXmPE13g")
 
 def get_road_path(start_point, end_point, mode='driving'):
     """

@@ -95,6 +95,10 @@ class EdgeAlgorithm(models.Model):
         KNN = 'knn', _('KNN')
         DISTANCE_THRESHOLD = 'distance_threshold', _('Distance Threshold')
         MST = 'mst', _('Minimum Spanning Tree')
+        GABRIEL = 'gabriel', _('Gabriel Graph')
+        BETA_SKELETON = 'beta_skeleton', _('Beta Skeleton')
+        RNG = 'rng', _('Relative Neighborhood Graph')
+        TSP = 'tsp', _('Traveling Salesman Problem')
         CUSTOM = 'custom', _('Custom')
     algorithm = models.CharField(
         max_length=32,
@@ -148,6 +152,7 @@ class Route(models.Model):
     id = models.AutoField(primary_key=True)
     edge = models.ForeignKey(Edge, related_name='edge', on_delete=models.CASCADE)
     translation = models.ForeignKey(EdgeTranslation, related_name='routes', on_delete=models.CASCADE, null=True, blank=True)
+    sub_route = models.ForeignKey('self', related_name='routes', on_delete=models.CASCADE, null=True, blank=True)
     polyline = models.TextField()  # Encoded path
     distance_meters = models.FloatField()
     duration_seconds = models.FloatField()

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import CreateNetworkView, EdgeTranslationAPIView, NetworkByTranslationView, NetworkDetailView, NetworkTranslationDetailView
+from .views import AlgorithmByNetworkDetailView, CreateNetworkView, EdgeTranslationAPIView, NetworkByTranslationView, NetworkDetailView, NetworkTranslationDetailView, TranslationsByAlgorithmDetailView
 
 router = DefaultRouter()
 router.register(r'countries', views.CountryViewSet)
@@ -37,9 +37,19 @@ urlpatterns = [
     path('networks/nodes/<int:pk>/', NetworkDetailView.as_view(), name='network-detail'),
     path('networks/<int:network_id>/connect_edges/', views.connect_network_edges, name='connect_network_edges'),
     path('edge-translations/', EdgeTranslationAPIView.as_view(), name='edge-translations'),
-     path(
-        'networks/<int:network_id>/translations/<int:translation_id>/',
+    path(
+        'edge_algorithms/<int:edge_algorithm_id>/translations/<int:translation_id>/',
         NetworkTranslationDetailView.as_view(),
         name='network-by-translation'
+    ),
+     path(
+        'getAlgorithmByNetworkID/<int:network_id>/',
+        AlgorithmByNetworkDetailView.as_view(),
+        name='getAlgorithmByNetworkID'
+    ),
+    path(
+        'getTranslationByAlgorithmID/<int:algorithm_id>/',
+        TranslationsByAlgorithmDetailView.as_view(),
+        name='getTranslationByAlgorithmID'
     ),
 ]

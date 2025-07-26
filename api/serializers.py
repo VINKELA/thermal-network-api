@@ -27,6 +27,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NetworkSerializer(serializers.ModelSerializer):
+    project = ProjectSerializer(read_only=True) # Use the ProjectSerializer here
     class Meta:
         model = Network
         fields = '__all__'
@@ -58,7 +59,10 @@ class EdgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Edge
         fields = '__all__'
-
+class EdgeTranslationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EdgeTranslation
+        fields = '__all__'
 
 class RouteSerializer(serializers.ModelSerializer):
     class Meta:
