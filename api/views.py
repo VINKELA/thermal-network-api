@@ -1,33 +1,18 @@
-from itertools import combinations
 import json
 import time
-from django.conf import settings
+from django.forms import model_to_dict
 import requests
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.exceptions import NotFound
 from .models import *
 from .serializers import *
-from .models import Project, Network, Node, Edge, Building, Pump, Valve, HeatPump
-from math import sqrt
 import networkx as nx
-from scipy.spatial import distance
 import numpy as np
-from django.db import connection, transaction
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from django.db import transaction
 from django.db.models import Prefetch
 from .models import Network, Node, Edge, Junction
-from .serializers import (
-    NetworkSerializer,
-    NodeSerializer,
-    EdgeSerializer,
-    JunctionSerializer,
-    TranslationWithAlgorithmSerializer  # Added import for missing serializer
-)
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -38,21 +23,14 @@ import numpy as np
 import math
 import uuid
 from rest_framework import generics
-from googlemaps.convert import decode_polyline
-from geopy.distance import great_circle
 import numpy as np
-from django.db import models, transaction, connection
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from django.db import transaction
 import time
 import requests
-from googlemaps.convert import decode_polyline, encode_polyline
-from geopy.distance import great_circle
-from shapely.geometry import LineString, Point
-from shapely.ops import substring
-from pyproj import Geod
-import numpy as np
+from googlemaps.convert import decode_polyline, encode_polyline # type: ignore
+from shapely.geometry import LineString
+import polyline
+from shapely.geometry import LineString
 
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
@@ -73,6 +51,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class NetworkViewSet(viewsets.ModelViewSet):
     queryset = Network.objects.all()
     serializer_class = NetworkSerializer
+class ClusterViewSet(viewsets.ModelViewSet):
+    queryset = Cluster.objects.all()
+    serializer_class = ClusterSerializer
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
@@ -131,10 +112,6 @@ class ThermalStorageViewSet(viewsets.ModelViewSet):
 class SensorViewSet(viewsets.ModelViewSet):
     queryset = Sensor.objects.all()
     serializer_class = SensorSerializer
-class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
-    serializer_class = RouteSerializer
-
 
 class MeterViewSet(viewsets.ModelViewSet):
     queryset = Meter.objects.all()
@@ -186,8 +163,8 @@ class NetworkDetailView(APIView):
             
             # Serialize the data
             network_data = NetworkSerializer(network).data
-            nodes_data = NodeSerializer(network.node_set.all(), many=True).data
-            edges_data = EdgeSerializer(network.edge_set.all(), many=True).data
+            nodes_data = NodeSerializer(network.node_set.all(), many=True).data # type: ignore
+            edges_data = EdgeSerializer(network.edge_set.all(), many=True).data # type: ignore
             
             response_data = {
                 'network': network_data,
@@ -235,10 +212,10 @@ class CreateNetworkView(APIView):
             
             # Combine all infrastructure points
             infrastructure_points = []
-            infrastructure_points.extend([(b.id, b.latitude, b.longitude, 'building', b.name, b.building_type) for b in buildings])
-            infrastructure_points.extend([(p.id, p.latitude, p.longitude, 'pump', p.name,"") for p in pumps])
-            infrastructure_points.extend([(v.id, v.latitude, v.longitude, 'valve', v.name, "") for v in valves])
-            infrastructure_points.extend([(hp.id, hp.latitude, hp.longitude, 'heat_pump', hp.name, "") for hp in heat_pumps])
+            infrastructure_points.extend([(b.id, b.latitude, b.longitude, 'building', b.name, b.building_type) for b in buildings]) # type: ignore
+            infrastructure_points.extend([(p.id, p.latitude, p.longitude, 'pump', p.name,"") for p in pumps]) # type: ignore
+            infrastructure_points.extend([(v.id, v.latitude, v.longitude, 'valve', v.name, "") for v in valves]) # type: ignore
+            infrastructure_points.extend([(hp.id, hp.latitude, hp.longitude, 'heat_pump', hp.name, "") for hp in heat_pumps]) # type: ignore
             
             if len(infrastructure_points) < 2:
                 return Response(
@@ -257,7 +234,7 @@ class CreateNetworkView(APIView):
                     longitude=lng,
                     node_type='consumer' if type not in ['commercial', 'industrial'] else 'producer'
                 )
-                nodes.append((node.id, lat, lng))
+                nodes.append((node.id, lat, lng)) # type: ignore
             
             # Create a complete graph with all possible edges
             G = nx.Graph()
@@ -270,7 +247,7 @@ class CreateNetworkView(APIView):
             
             return Response({
                 "message": f"Network created successfully with {len(nodes)} nodes",
-                "network_id": network.id,
+                "network_id": network.id, # type: ignore
             }, status=status.HTTP_201_CREATED)
             
         except Project.DoesNotExist:
@@ -297,14 +274,12 @@ class EdgeTranslationAPIView(APIView):
         description = request.data.get('description', '')
         is_default = request.data.get('is_default', False)
         parameters = request.data.get('parameters', {})
-        
-        # Validate required fields
         if not edge_algorithm_id or not translation_type:
             return Response(
                 {'error': 'edge_algorithm_id and translation_type are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         try:
             # Get the edge algorithm
             edge_algorithm = EdgeAlgorithm.objects.get(pk=edge_algorithm_id)
@@ -313,107 +288,24 @@ class EdgeTranslationAPIView(APIView):
                 {'error': 'EdgeAlgorithm not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
+
         # Validate translation type against Google Maps options
         valid_translation_types = {
-            'driving': 'driving',
+            #'driving': 'driving',
             'walking': 'walking',
-            'bicycling': 'bicycling',
+            #'bicycling': 'bicycling',
             'transit': 'transit'
         }
-        
+
         if translation_type not in valid_translation_types:
             return Response(
                 {'error': f'Invalid translation type. Valid types are: {", ".join(valid_translation_types.keys())}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Get all edges for this algorithm
-        edges = Edge.objects.filter(edge_algorithm=edge_algorithm)
-        
-        total_edge_length = 0
-        created_routes = []
-         # Create EdgeTranslation
-        edge_translation = EdgeTranslation.objects.create(
-            translation=translation_type,
-            name=f"{name or translation_type}",
-            description=description,
-            is_default=is_default,
-            parameters=parameters,
-            algorithm=edge_algorithm
-        )
-        r = [];
-        for edge in edges:
-            # Get coordinates for start and end nodes
-            start_coords = (edge.start_node.latitude, edge.start_node.longitude)
-            end_coords = (edge.end_node.latitude, edge.end_node.longitude)
-            
-            # Call Google Maps Directions API
-            route_data = self._get_google_maps_route(
-                start_coords, 
-                end_coords, 
-                valid_translation_types[translation_type]               
-            )
-            
+        return translate(edge_algorithm, translation_type,parameters, description, name)
 
-            # Create Route
-            route = Route.objects.create(
-                edge=edge,
-                translation=edge_translation,
-                polyline=route_data['polyline'],
-                distance_meters=route_data['distance'],
-                duration_seconds=route_data['duration']
-            )
-            r.append(route.polyline)
-            total_edge_length += route.distance_meters
-            created_routes.append(route)
-            
-            # Add delay to avoid hitting rate limits
-            time.sleep(0.1)
-        
-        # Update total_edge_length for the translation
-        edge_translation.total_edge_length = total_edge_length
-        edge_translation.save()
-        rs = merge_overlapping_polylines(r)
-        print("polylines: %s", rs)
-        # Serialize response
-        translation_serializer = EdgeTranslationSerializer(edge_translation, many=False)
-        route_serializer = RouteSerializer(created_routes, many=True)
-        
-        return Response({
-            'translations': translation_serializer.data,
-            'routes': route_serializer.data,
-            'total_edge_length': total_edge_length,
-            'message': f'Successfully created 1 translations and {len(created_routes)} routes'
-        }, status=status.HTTP_201_CREATED)
-    def _get_google_maps_route(self, start_coords, end_coords, travel_mode):
-        """Fetch route from Google Maps API"""
-        try:
-            base_url = "https://maps.googleapis.com/maps/api/directions/json"
-            params = {
-                'origin': f"{start_coords[0]},{start_coords[1]}",
-                'destination': f"{end_coords[0]},{end_coords[1]}",
-                'mode': travel_mode,
-                'key': "AIzaSyCaXWRoAPR8EvJ8FhqpZRTWMo8aXmPE13g",
-                'units': 'metric'
-            }
-            
-            response = requests.get(base_url, params=params)
-            response.raise_for_status()
-            data = response.json()
-            
-            if data['status'] == 'OK' and data.get('routes'):
-                route = data['routes'][0]
-                leg = route['legs'][0]
-                return {
-                    'polyline': route['overview_polyline']['points'],
-                    'distance': leg['distance']['value'],
-                    'duration': leg['duration']['value']
-                }
-            return None
-        except Exception as e:
-            print(f"Error fetching route: {str(e)}")
-            return None
+
+
 
     def _merge_segments_to_polyline(self, segments):
         """Merge multiple LineString segments into a single polyline"""
@@ -467,7 +359,7 @@ class NetworkTranslationDetailView(generics.GenericAPIView):
         except EdgeAlgorithm.DoesNotExist:
             raise NotFound("Algorithm not found")
         try:
-            network = Network.objects.get(pk=algorithm.network.id)
+            network = Network.objects.get(pk=algorithm.network.id) # type: ignore
         except Network.DoesNotExist:
             raise NotFound("Network not found")
         # Get translation with prefetched algorithm and verify it belongs to this network
@@ -538,9 +430,49 @@ class TranslationsByAlgorithmDetailView(generics.GenericAPIView):
             'translations': EdgeTranslationSerializer(translations, many=True).data,
         })
 
+@csrf_exempt  # Temporarily disable CSRF for testing
+@require_http_methods(["POST"])
+def cluster_network_nodes(request, network_id):
+    try:
+        network = Network.objects.get(pk=network_id)
+        nodes = list(Node.objects.filter(network=network))
+        
+        if len(nodes) < 2:
+            return JsonResponse({'status': 'error', 'message': 'Network needs at least 2 nodes'})        
+       # Parse JSON data from request body
+        result = cluster_nodes(network_id)
+        cluster = result['meta']   # type: ignore
+
+        return JsonResponse( {        
+            'status': 'success',
+            'message': f'Successfully created clusters for network',
+            'cluster': cluster.name
+            
+        })
+    except Network.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Network not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @csrf_exempt  # Temporarily disable CSRF for testing
+@require_http_methods(["GET"])
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_cluster_data(request, cluster_id):
+    data = get_cluster(cluster_id)
+    if not data:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Cluster with id {cluster_id} not found'
+        }, status=404)
 
+    return JsonResponse({
+        'status': 'success',
+        'message': f'Cluster network data for cluster {cluster_id}',
+        'data': data
+    })
+       
+@csrf_exempt  # Temporarily disable CSRF for testing
 @require_http_methods(["POST"])
 def connect_network_edges(request, network_id):
     try:
@@ -572,7 +504,7 @@ def connect_network_edges(request, network_id):
             edges_created = connect_by_knn(nodes, coords, network, k)
         elif method == EdgeAlgorithm.EdgeAlgorithmType.MST:
             # Steiner Tree approximation method
-            edges_created = connect_by_mst(nodes, coords, network)
+            edges_created = model_to_dict(connect_by_mst(nodes, coords, network))
         elif method == EdgeAlgorithm.EdgeAlgorithmType.GABRIEL:
             # Steiner Tree approximation method
             edges_created = connect_by_gabriel(nodes, coords, network)
@@ -600,6 +532,290 @@ def connect_network_edges(request, network_id):
         return JsonResponse({'status': 'error', 'message': 'Network not found'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+#cluster -> means create subnetworks based on distance
+def cluster_nodes(network_id: int):
+    try:
+        network = Network.objects.get(pk=network_id)
+    except Network.DoesNotExist:
+        print(f"Network with id {network_id} does not exist")
+        return 0
+
+    # Create cluster
+    cluster = Cluster.objects.create(
+        network=network,
+        name=f"{network.name} - Cluster",
+        description="Cluster created"
+    )
+
+    nodes = Node.objects.filter(network=network)
+    if not nodes.exists():
+        return 0
+
+    # Select all producer nodes
+    producers = nodes.filter(node_type='producer')
+    if not producers.exists():
+        return 0
+
+    lat, lng = calculate_centroid(producers)
+
+    # Create network for producers
+    prod_network = Network.objects.create(
+        name=f"{network.name} - Producers Cluster",
+        network_type=network.network_type,
+        project=network.project,
+        total_length=0.0,
+        parent_network=network,
+        cluster=cluster,
+        latitude=lat,
+        longitude=lng
+    )
+
+    clusters = {}
+    sub_networks = {}
+
+    producer_nodes = []
+    for producer in producers:
+        p_node = Node.objects.create(
+            network=prod_network,
+            name=producer.name,
+            latitude=producer.latitude,
+            longitude=producer.longitude,
+            node_type='producer'
+        )
+        producer_nodes.append(p_node)
+        clusters[producer.name] = []
+        sub_networks[producer.name] = {}
+
+    # Connect producer nodes using MST
+    edge_algorithm = connect_by_mst(
+        producer_nodes,
+        [(p.latitude, p.longitude) for p in producer_nodes],
+        prod_network
+    )
+    translate(edge_algorithm, 'transit')
+
+    # Select all consumer nodes
+    consumers = nodes.filter(node_type='consumer')
+    for consumer in consumers:
+        closest_producer = min(
+            producers,
+            key=lambda p: haversine_distance(
+                consumer.latitude, consumer.longitude,
+                p.latitude, p.longitude
+            ),
+            default=None
+        )
+        if closest_producer:
+            clusters[closest_producer.name].append({
+                "consumer": consumer,
+                "producer": closest_producer
+            })
+
+    # Create sub-networks for each producer cluster
+    for producer_name, data in clusters.items():
+        if not data:
+            continue
+
+        consumer_nodes = [entry["consumer"] for entry in data]
+        producer = data[0]["producer"]
+
+        lat, lng = calculate_centroid(consumer_nodes)
+
+        sub_network = Network.objects.create(
+            name=f"{network.name} - {producer_name} Consumers Cluster",
+            network_type=network.network_type,
+            project=network.project,
+            total_length=0.0,
+            parent_network=network,
+            cluster=cluster,
+            latitude=lat,
+            longitude=lng
+        )
+
+        sub_networks[producer_name] = {
+            "producer": producer,
+            "network": sub_network
+        }
+
+        c_nodes = []
+
+        # Add producer node to sub-network
+        Node.objects.create(
+            network=sub_network,
+            name=producer.name,
+            latitude=producer.latitude,
+            longitude=producer.longitude,
+            node_type='producer'
+        )
+
+        # Add consumer nodes to sub-network
+        for consumer in consumer_nodes:
+            c_node = Node.objects.create(
+                network=sub_network,
+                name=consumer.name,
+                latitude=consumer.latitude,
+                longitude=consumer.longitude,
+                node_type='consumer'
+            )
+            c_nodes.append(c_node)
+
+        # Connect sub-network nodes using MST
+        alg = connect_by_mst(
+            c_nodes,
+            [(n.latitude, n.longitude) for n in c_nodes],
+            sub_network
+        )
+        translate(alg, 'transit')
+
+    # Create main cluster network
+    main_cluster = Network.objects.create(
+        name=f"{network.name} - Cluster - Network",
+        network_type=network.network_type,
+        project=network.project,
+        total_length=0.0,
+        parent_network=network,
+        cluster=cluster
+    )
+
+    # Add sub-network nodes to main cluster
+    for producer_name, item in sub_networks.items():
+        if item == {}:
+            continue
+        sub_net = item["network"]
+        producer = item["producer"]
+
+        nodes = []
+
+        # Add sub-network node
+        n = Node.objects.create(
+            network=main_cluster,
+            name=sub_net.name,
+            latitude=sub_net.latitude,
+            longitude=sub_net.longitude,
+            node_type="consumer"
+        )
+        nodes.append(n)
+
+        # Add producer node
+        p_node = Node.objects.create(
+            network=main_cluster,
+            name=producer.name,
+            latitude=producer.latitude,
+            longitude=producer.longitude,
+            node_type="producer"
+        )
+        nodes.append(p_node)
+
+        edge_algorithm = connect_by_mst(
+            nodes,
+            [(n.latitude, n.longitude) for n in nodes],
+            main_cluster
+        )
+        translate(edge_algorithm, 'transit')
+
+    return {"clusters": sub_networks, "meta": cluster}
+def translate(edge_algorithm, translation_type = 'transit',
+               parameters = {}, description = '', name = '', is_default=False):
+        # Validate required fields
+
+
+    # Get all edges for this algorithm
+    edges = Edge.objects.filter(edge_algorithm=edge_algorithm)
+
+    total_edge_length = 0
+    created_routes = []
+        # Create EdgeTranslation
+    edge_translation = EdgeTranslation.objects.create(
+        translation=translation_type,
+        name=f"{name or translation_type}",
+        description=description,
+        is_default=is_default,
+        parameters=parameters,
+        algorithm=edge_algorithm
+    )
+    r = [];
+    for edge in edges:
+        # Get coordinates for start and end nodes
+        start_coords = (edge.start_node.latitude, edge.start_node.longitude)
+        end_coords = (edge.end_node.latitude, edge.end_node.longitude)
+        
+        isPrimary = edge.start_node.node_type == "producer"
+        # Call Google Maps Directions API
+        route_data = get_google_maps_route(
+            start_coords, 
+            end_coords, 
+            get_valid_translation_type(translation_type)             
+        )
+        
+
+        # Create Route
+        route = Route.objects.create(
+            edge=edge,
+            translation=edge_translation,
+            polyline=route_data['polyline'], # type: ignore
+            distance_meters=route_data['distance'], # type: ignore
+            duration_seconds=route_data['duration'], # type: ignore
+            route_type = "supply" if isPrimary else "return"
+            )
+        r.append(route.polyline)
+        total_edge_length += route.distance_meters
+        created_routes.append(route)
+        
+        # Add delay to avoid hitting rate limits
+        time.sleep(0.1)
+
+    # Update total_edge_length for the translation
+    edge_translation.total_edge_length = total_edge_length
+    edge_translation.save()
+    # Serialize response
+    translation_serializer = EdgeTranslationSerializer(edge_translation, many=False)
+    route_serializer = RouteSerializer(created_routes, many=True)
+
+    return Response({
+        'translations': translation_serializer.data,
+        'routes': route_serializer.data,
+        'total_edge_length': total_edge_length,
+        'message': f'Successfully created 1 translations and {len(created_routes)} routes'
+    }, status=status.HTTP_201_CREATED)
+
+def get_google_maps_route(start_coords, end_coords, travel_mode):
+    """Fetch route from Google Maps API"""
+    try:
+        base_url = "https://maps.googleapis.com/maps/api/directions/json"
+        params = {
+            'origin': f"{start_coords[0]},{start_coords[1]}",
+            'destination': f"{end_coords[0]},{end_coords[1]}",
+            'mode': travel_mode,
+            'key': "AIzaSyCaXWRoAPR8EvJ8FhqpZRTWMo8aXmPE13g",
+            'units': 'metric'
+        }
+        
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data['status'] == 'OK' and data.get('routes'):
+            route = data['routes'][0]
+            leg = route['legs'][0]
+            return {
+                'polyline': route['overview_polyline']['points'],
+                'distance': leg['distance']['value'],
+                'duration': leg['duration']['value']
+            }
+        return None
+    except Exception as e:
+        print(f"Error fetching route: {str(e)}")
+        return None   
+def get_valid_translation_type(translationType):
+     # Validate translation type against Google Maps options
+    valid_translation_types = {
+        #'driving': 'driving',
+        'walking': 'walking',
+        #'bicycling': 'bicycling',
+        'transit': 'transit'
+    }
+    return valid_translation_types[translationType]
+    
 
 def connect_by_distance_threshold(nodes, coords, network, d_max):
     edges_created = 0
@@ -635,14 +851,14 @@ def connect_by_distance_threshold(nodes, coords, network, d_max):
                     start_node=node1,
                     end_node=node2,
                     length=distance,
-                    name=unique_name,
+                    name=unique_name, # type: ignore
                     edge_algorithm=edge_algorithm
                 )
             edges_created += 1
             total_length += distance
     edge_algorithm.total_edge_length = total_length
     edge_algorithm.save(update_fields=["total_edge_length"])
-    return edges_created
+    return edge_algorithm
 def connect_by_gabriel(nodes, coords, network):
     """
     Connect nodes following Gabriel Graph rules:
@@ -724,7 +940,7 @@ def connect_by_gabriel(nodes, coords, network):
     edge_algorithm.total_edge_length = total_length
     edge_algorithm.save(update_fields=["total_edge_length"])
     
-    return edges_created
+    return edge_algorithm
 def connect_by_delaunay(nodes, coords, network):
     edges_created = 0
     total_length = 0.0
@@ -773,7 +989,7 @@ def connect_by_delaunay(nodes, coords, network):
         total_length += distance
     edge_algorithm.total_edge_length = total_length
     edge_algorithm.save(update_fields=["total_edge_length"])
-    return edges_created
+    return edge_algorithm
 def connect_by_mst(nodes, coords, network):
     """Connect nodes using Minimum Spanning Tree (MST) with similar patterns to Delaunay implementation"""
     edges_created = 0
@@ -857,7 +1073,7 @@ def connect_by_mst(nodes, coords, network):
     edge_algorithm.total_edge_length = total_length
     edge_algorithm.save(update_fields=["total_edge_length"])
     
-    return edges_created
+    return edge_algorithm
 
 def connect_by_knn(nodes, coords, network, k):
     edges_created = 0
@@ -903,7 +1119,7 @@ def connect_by_knn(nodes, coords, network, k):
             total_length += distance
     edge_algorithm.total_edge_length = total_length
     edge_algorithm.save(update_fields=["total_edge_length"])
-    return edges_created
+    return edge_algorithm
 def create_algorithm_record(network, algorithm_type, params=None):
     return EdgeAlgorithm.objects.create(
         network=network,
@@ -954,7 +1170,7 @@ def connect_by_beta_skeleton(nodes, coords, network, beta=1.5):
                     total_length += dist
     
     update_algorithm_metrics(algorithm, edges_created, total_length)
-    return edges_created 
+    return algorithm 
 def connect_by_rng(nodes, coords, network):
     algorithm = create_algorithm_record(network, EdgeAlgorithm.EdgeAlgorithmType.RNG)
     edges_created = 0
@@ -983,7 +1199,7 @@ def connect_by_rng(nodes, coords, network):
                     total_length += dist_ab
     
     update_algorithm_metrics(algorithm, edges_created, total_length)
-    return edges_created
+    return algorithm
 def create_edge(network, node1, node2, distance, algorithm, unique_suffix=""):
     unique_name = f"{node1.name or node1.id}-{node2.name or node2.id}-{unique_suffix}"
     edge, created = Edge.objects.update_or_create(
@@ -1015,14 +1231,14 @@ def connect_by_tsp(nodes, coords, network):
         edges_created = 0
         total_length = 0.0
         
-        for i in range(len(tour)-1):
-            dist = G[tour[i]][tour[i+1]]['weight']
-            if create_edge(network, nodes[tour[i]], nodes[tour[i+1]], dist, algorithm):
+        for i in range(len(tour)-1): # type: ignore
+            dist = G[tour[i]][tour[i+1]]['weight'] # type: ignore
+            if create_edge(network, nodes[tour[i]], nodes[tour[i+1]], dist, algorithm): # type: ignore
                 edges_created += 1
                 total_length += dist
         
         update_algorithm_metrics(algorithm, edges_created, total_length)
-        return edges_created
+        return algorithm
     except:
         return connect_by_mst(nodes, coords, network)  # Fallback
 def haversine(lat1, lon1, lat2, lon2):
@@ -1041,104 +1257,197 @@ def haversine(lat1, lon1, lat2, lon2):
     r = 6371  # Radius of earth in kilometers
     return c * r * 1000  # Return distance in meters
 
-from shapely.geometry import LineString, MultiLineString, GeometryCollection
-from shapely.ops import linemerge, unary_union
-import polyline
+def calculate_centroid(locations) -> tuple:
+    if not locations:
+        raise ValueError("Location list is empty")
 
-def decode_polyline(encoded):
-    """Decodes a Google-encoded polyline string."""
-    return polyline.decode(encoded)
+    total_lat = sum(loc.latitude for loc in locations)
+    total_lon = sum(loc.longitude for loc in locations)
+    count = len(locations)
 
-def encode_polyline(decoded):
-    """Encodes a list of coordinates into a Google-encoded polyline string."""
-    return polyline.encode(decoded)
+    centroid_lat = total_lat / count
+    centroid_lon = total_lon / count
 
-def safe_merge(group):
+    return (centroid_lat, centroid_lon)
+
+# Assume these are correctly defined elsewhere, e.g., as wrappers for polyline.decode/encode
+# IMPORTANT: Ensure your decode_polyline returns a list of (lat, lon) tuples, not dictionaries.
+# If it returns dictionaries, you'll need to adapt it.
+# Let's define a robust one here for clarity:
+def decode_polyline(encoded_string):
+    try:
+        # polyline.decode() from the 'polyline' library correctly returns list of (lat, lon) tuples
+        return polyline.decode(encoded_string)
+    except Exception as e:
+        print(f"DEBUG: Error decoding polyline: {encoded_string[:50]}... Error: {e}")
+        return None
+
+def encode_polyline(decoded_coords):
+    try:
+        # polyline.encode expects list of (lat, lon) tuples
+        return polyline.encode(decoded_coords)
+    except Exception as e:
+        print(f"DEBUG: Error encoding polyline: {e}")
+        return None
+
+def combine(routes: list[Route], tolerance: float = 0.00005) -> list[Route] | None:
     """
-    Safely unions and merges a group of LineString objects.
-    (This function from your original code is effective and kept as is)
-    """
-    unioned = unary_union(group)
-    
-    if isinstance(unioned, (MultiLineString, GeometryCollection)):
-        return linemerge(unioned)
-    
-    if isinstance(unioned, LineString):
-        return unioned
-    
-    # Return None for other geometry types like Points, which can't be encoded as polylines.
-    return None
+    Combines polylines from a list of route objects into a single continuous
+    polyline and then simplifies it. It modifies the polyline attribute of the
+    first route in the list and clears others (or returns a new list).
 
-def merge_overlapping_polylines(encoded_polylines, tolerance=1e-6):
-    """
-    Merges a list of encoded polylines, correctly combining all that overlap or touch,
-    including transitive overlaps (e.g., A-B, B-C).
-    
     Args:
-        encoded_polylines (list): A list of Google-encoded polyline strings.
-        tolerance (float): A small buffer distance to account for floating-point
-                           inaccuracies when checking for intersections.
+        routes (list[Route]): A list of Route objects, each containing an encoded polyline string.
+        tolerance (float): The tolerance for the Douglas-Peucker simplification algorithm.
+                           A higher value results in more aggressive simplification.
 
     Returns:
-        list: A new list of encoded polylines with no overlaps.
+        list[Route] | None: A new list containing a single Route object with the combined
+                            and simplified polyline, or None if input is invalid or an error occurs.
     """
-    if not encoded_polylines:
-        return []
+    if not routes:
+        print("DEBUG (combine_and_simplify_routes): Input list of routes is empty.")
+        return None
 
-    # 1. Decode polylines into Shapely LineString objects
-    lines = []
-    for p in encoded_polylines:
-        decoded = decode_polyline(p)
-        if len(decoded) >= 2:
-            lines.append(LineString(decoded))
-    
-    if len(lines) <= 1:
-        return [encode_polyline(list(line.coords)) for line in lines]
+    routes.sort(key=lambda x: len(x.polyline), reverse=True)
 
-    num_lines = len(lines)
-    
-    # 2. Build an adjacency list to represent the overlap graph
-    # Two lines are "adjacent" if they intersect.
-    adjacency = [[] for _ in range(num_lines)]
-    buffered_lines = [line.buffer(tolerance) for line in lines] # Pre-buffer for efficiency
-    
-    for i in range(num_lines):
-        for j in range(i + 1, num_lines):
-            if buffered_lines[i].intersects(lines[j]):
-                adjacency[i].append(j)
-                adjacency[j].append(i)
+    all_coords = []
+    # Decode each polyline string and collect all coordinates
+    for i, route_obj in enumerate(routes):
+        decoded_segment_raw = decode_polyline(route_obj.polyline)
 
-    # 3. Find connected components (groups of overlapping lines) using DFS
-    visited = [False] * num_lines
-    final_polylines = []
+        if decoded_segment_raw is None:
+            print(f"DEBUG (combine_and_simplify_routes): Warning: Skipping route {i} due to decoding error.")
+            continue
 
-    for i in range(num_lines):
-        if not visited[i]:
-            component_indices = []
-            stack = [i]
-            visited[i] = True
-            
-            # Use Depth-First Search to find all transitively connected lines
-            while stack:
-                node_idx = stack.pop()
-                component_indices.append(node_idx)
-                for neighbor_idx in adjacency[node_idx]:
-                    if not visited[neighbor_idx]:
-                        visited[neighbor_idx] = True
-                        stack.append(neighbor_idx)
-            
-            # 4. Merge the identified group
-            group_to_merge = [lines[idx] for idx in component_indices]
-            merged_geometry = safe_merge(group_to_merge)
+        if not decoded_segment_raw:
+            print(f"DEBUG (combine_and_simplify_routes): Warning: Route {i} decoded to an empty list of coordinates. Skipping.")
+            continue
 
-            # 5. Process and encode the merged result
-            if merged_geometry is None:
+        # --- FIX STARTS HERE ---
+        # Ensure coordinates are (lat, lon) tuples, not dictionaries.
+        # This loop transforms them if they are dictionaries.
+        decoded_segment_tuples = []
+        for point in decoded_segment_raw:
+            if isinstance(point, dict) and 'lat' in point and 'lng' in point:
+                decoded_segment_tuples.append((point['lat'], point['lng'])) # type: ignore
+            elif isinstance(point, (list, tuple)) and len(point) == 2:
+                # Assuming it's already (lat, lon) tuple/list
+                decoded_segment_tuples.append(tuple(point))
+            else:
+                print(f"DEBUG (combine_and_simplify_routes): Warning: Unexpected coordinate format in segment {i}: {point}. Skipping point.")
+                # You might want to raise an error or handle this more strictly
                 continue
-            elif isinstance(merged_geometry, LineString):
-                final_polylines.append(encode_polyline(list(merged_geometry.coords)))
-            elif isinstance(merged_geometry, MultiLineString):
-                # If merging results in disconnected segments, encode each one
-                for line in merged_geometry.geoms:
-                    final_polylines.append(encode_polyline(list(line.coords)))
-    
-    return final_polylines
+        # --- FIX ENDS HERE ---
+
+        # Append coordinates, handling potential duplicate at segment junctions
+        if all_coords and all_coords[-1] == decoded_segment_tuples[0]:
+            all_coords.extend(decoded_segment_tuples[1:])
+        else:
+            all_coords.extend(decoded_segment_tuples)
+
+    if not all_coords:
+        print("DEBUG (combine_and_simplify_routes): No valid coordinates were collected from the input routes.")
+        return None
+
+    print(f"DEBUG (combine_and_simplify_routes): Total combined raw coordinates: {len(all_coords)} points.")
+    # Print a few raw coordinates to verify their format
+    print(f"DEBUG (combine_and_simplify_routes): Sample raw coords: {all_coords[:5]}")
+
+
+    try:
+        if len(all_coords) < 2:
+            print(f"DEBUG (combine_and_simplify_routes): Combined coordinates too few ({len(all_coords)}). Cannot form a LineString for simplification.")
+            if len(all_coords) == 1:
+                combined_encoded_polyline = encode_polyline(all_coords)
+                if combined_encoded_polyline:
+                    routes[0].polyline = combined_encoded_polyline
+                    return [routes[0]]
+                return None
+            return None
+
+        # LineString expects (lon, lat) internally, but it can take (lat, lon) if consistently applied.
+        # However, the standard way is (x, y) which for geographic is (lon, lat).
+        # Let's ensure we convert to (lon, lat) for shapely's constructor for clarity and robustness.
+        coords_for_shapely = [(lon, lat) for lat, lon in all_coords]
+        line = LineString(coords_for_shapely) # Now this should work!
+
+        print(f"DEBUG (combine_and_simplify_routes): Created LineString. Is it valid? {line.is_valid}. Original points: {len(line.coords)}")
+
+        if not line.is_valid:
+            print("DEBUG (combine_and_simplify_routes): Warning: The combined LineString is not valid. This might impact simplification.")
+
+        simplified_line = line.simplify(tolerance, preserve_topology=True)
+        print(f"DEBUG (combine_and_simplify_routes): Simplified LineString type: {simplified_line.geom_type}. Simplified points: {len(simplified_line.coords)}")
+
+        if simplified_line.is_empty:
+            print("DEBUG (combine_and_simplify_routes): Simplified LineString is empty. Tolerance might be too high.")
+            return None
+        elif simplified_line.geom_type == 'Point':
+            # shapely Point coords are (x, y) which is (lon, lat)
+            simplified_coords_for_encoding = [(simplified_line.y, simplified_line.x)] # type: ignore # Convert back to (lat, lon)
+            print("DEBUG (combine_and_simplify_routes): Simplified to a single Point.")
+        else: # Should be a LineString
+            # Convert shapely's (lon, lat) .coords back to polyline's (lat, lon)
+            simplified_coords_for_encoding = [(lat, lon) for lon, lat in simplified_line.coords]
+
+        if not simplified_coords_for_encoding:
+            print("DEBUG (combine_and_simplify_routes): Simplified coordinates list is empty after processing. Cannot encode.")
+            return None
+        
+        print(f"DEBUG (combine_and_simplify_routes): Final simplified coords for encoding (first 5): {simplified_coords_for_encoding[:5]}")
+
+        combined_encoded_polyline = encode_polyline(simplified_coords_for_encoding)
+
+        if combined_encoded_polyline:
+            routes[0].polyline = combined_encoded_polyline
+            print(f"DEBUG (combine_and_simplify_routes): Successfully encoded final polyline. Length: {len(combined_encoded_polyline)}")
+            return [routes[0]]
+        else:
+            print("DEBUG (combine_and_simplify_routes): Failed to encode the final simplified polyline.")
+            return None
+
+    except Exception as e:
+        print(f"DEBUG (combine_and_simplify_routes): An unhandled error occurred during polyline combination/simplification: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+def get_cluster(cluster_id: int, algorithm=1):
+    try:
+        cluster = Cluster.objects.get(id=cluster_id)
+    except Cluster.DoesNotExist:
+        return None
+
+    networks = Network.objects.filter(cluster=cluster)
+    network_list = []
+    first = networks[0]
+    last = networks[len(networks) - 1]
+    list = [first, last]
+    for i in range(len(list)):
+        network = list[i]
+        nodes_list = []
+        routes_list = []
+        algorithms = EdgeAlgorithm.objects.filter(network=network)
+        for algorithm in algorithms:
+            translations = EdgeTranslation.objects.filter(algorithm=algorithm)
+            for translation in translations:
+                nodes = Node.objects.filter(network=network)
+                nodes_list.extend(nodes)  # ✅ flattening
+                routes = Route.objects.filter(translation=translation)
+                routes_list.extend(routes)  # ✅ flattening
+
+        net = {
+            "id": network.id, # type: ignore
+            "name": network.name,
+            "nodes": [model_to_dict(n) for n in nodes_list],
+            "routes": [model_to_dict(r) for r in routes_list]
+        }
+        network_list.append(net)
+
+    return {
+        "cluster": {
+            "name": cluster.name
+                    },
+        "networks": network_list
+        }
