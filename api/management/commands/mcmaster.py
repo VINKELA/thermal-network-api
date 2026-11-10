@@ -1,27 +1,30 @@
-# myapp/management/commands/create_mcmaster_buildings.py
+# myapp/management/commands/create_mcmaster_network.py
+
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from datetime import datetime, timedelta
-from api.models import (
-    Country, Province, City, Project, Building
-)
+from api.models import Country, Province, City, Project, Building, Boiler
 
 class Command(BaseCommand):
-    help = 'Creates McMaster thermal network project with buildings only'
+    help = 'Creates McMaster thermal network project with buildings and a boiler'
 
     def handle(self, *args, **options):
         # 1. Create geographic hierarchy
         canada = self.create_country()
         ontario = self.create_province(canada)
         hamilton = self.create_city(ontario, canada)
-        
+
         # 2. Create project
         project = self.create_project(canada, ontario, hamilton)
-        
-        # 3. Create buildings with accurate GIS coordinates
+
+        # 3. Create buildings
         self.create_buildings(project)
-        
-        self.stdout.write(self.style.SUCCESS('\nSuccessfully created all buildings with accurate GIS coordinates'))
+
+        # 4. Create boiler
+        self.create_boiler(project)
+
+        self.stdout.write(self.style.SUCCESS(
+            '\n✅ Successfully created McMaster Thermal Network with buildings and boiler'
+        ))
 
     def create_country(self):
         country, created = Country.objects.get_or_create(
@@ -76,21 +79,19 @@ class Command(BaseCommand):
 
     def create_buildings(self, project):
         buildings_data = [
-            # Nuclear Reactor (heat source) - Actual location
             {
                 "name": "McMaster Nuclear Reactor (MNR)",
                 "building_type": "industrial",
                 "latitude": 43.261251236183504,
-                "longitude":  -79.92157852735507,
+                "longitude": -79.92157852735507,
                 "floor_area": 5000,
-                "heating_demand": 0,  # Producer
+                "heating_demand": 0,
                 "cooling_demand": 0
             },
-            # Restaurants
             {
                 "name": "Phoenix Craft House and Grill",
                 "building_type": "commercial",
-                "latitude": 43.2629541330204, 
+                "latitude": 43.2629541330204,
                 "longitude": -79.92068808183345,
                 "floor_area": 2500,
                 "heating_demand": 350,
@@ -99,27 +100,25 @@ class Command(BaseCommand):
             {
                 "name": "Bistro in Mary Keyes Residence",
                 "building_type": "commercial",
-                "latitude": 43.26231520883189, 
+                "latitude": 43.26231520883189,
                 "longitude": -79.9222195588532,
                 "floor_area": 1800,
                 "heating_demand": 280,
                 "cooling_demand": 150
             },
-            # Health Sciences Complex
             {
                 "name": "Health Sciences Centre (HSC)",
                 "building_type": "public",
-                "latitude": 43.260336751767895, 
+                "latitude": 43.260336751767895,
                 "longitude": -79.91728704080425,
                 "floor_area": 45000,
                 "heating_demand": 2800,
                 "cooling_demand": 3200
             },
-            # Engineering Buildings
             {
                 "name": "John Hodgins Engineering Building (JHE)",
                 "building_type": "public",
-                "latitude": 43.260657094019884, 
+                "latitude": 43.260657094019884,
                 "longitude": -79.92023747071741,
                 "floor_area": 32000,
                 "heating_demand": 2100,
@@ -128,28 +127,25 @@ class Command(BaseCommand):
             {
                 "name": "McMaster Museum of Art",
                 "building_type": "public",
-                "latitude": 43.262824359990425, 
+                "latitude": 43.262824359990425,
                 "longitude": -79.91727077197686,
                 "floor_area": 18000,
                 "heating_demand": 1400,
                 "cooling_demand": 1600
             },
-          
-            # Athletic Facilities
             {
                 "name": "David Braley Athletic Centre (DBAC)",
                 "building_type": "public",
-                "latitude":43.26508984613477, 
+                "latitude": 43.26508984613477,
                 "longitude": -79.91659951615942,
                 "floor_area": 28000,
                 "heating_demand": 1900,
                 "cooling_demand": 1800
             },
-            # Science Buildings
             {
                 "name": "Burke Science Building (BSB)",
                 "building_type": "public",
-                "latitude": 43.262234653258815, 
+                "latitude": 43.262234653258815,
                 "longitude": -79.9202102900079,
                 "floor_area": 35000,
                 "heating_demand": 2200,
@@ -158,7 +154,7 @@ class Command(BaseCommand):
             {
                 "name": "Arthur Bourns Building (ABB)",
                 "building_type": "public",
-                "latitude": 43.260346100438895, 
+                "latitude": 43.260346100438895,
                 "longitude": -79.92232437540929,
                 "floor_area": 25000,
                 "heating_demand": 1800,
@@ -175,3 +171,18 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(
                     f'Created Building: {building.name} at {building.latitude}, {building.longitude}'
                 ))
+
+    def create_boiler(self, project):
+        boiler, created = Boiler.objects.get_or_create(
+            project=project,
+            name="Central Boiler Plant",
+            boiler_type="gas",
+            capacity=5000,  # kW
+            efficiency=0.85,  # 85%
+            fuel_type="Natural Gas",
+            status="operational",
+            latitude=43.2618,
+            longitude=-79.9195
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS(f'Created Boiler: {boiler.name}'))

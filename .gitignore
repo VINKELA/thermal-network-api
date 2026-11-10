@@ -88,8 +88,14 @@ Thumbs.db
 
 # SQL dump files
 *.dump
+data/weather_cache/
+data/load_profile_runs/
 *.backup
 
 # Vim swap files
 *.swp
 *.swo
+*.md
+data/sensitivity_runs/
+data/*
+code/

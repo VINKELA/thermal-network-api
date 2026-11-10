@@ -1,4 +1,3 @@
-# myapp/management/commands/create_mcmaster_infrastructure.py
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import datetime, timedelta
