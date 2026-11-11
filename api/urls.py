@@ -4,6 +4,7 @@ from . import views
 from .views import *
 from .heating_profile_views import HeatingModelCatalogView, HeatingProfileComparisonView, ApplyHeatingProfileView, HeatingStudyBuildingsView
 from .heating_sensitivity_views import PipeSensitivityStartView, PipeSensitivityStatusView
+from .break_even_views import BreakEvenStartView, BreakEvenStatusView
 router = DefaultRouter()
 router.register(r'countries', views.CountryViewSet)
 router.register(r'provinces', views.ProvinceViewSet)
@@ -45,6 +46,8 @@ router.register(r'phasing-studies', views.PhasingStudyViewSet, basename='phasing
 from .imported_heating_views import ImportedHeatingView
 
 urlpatterns = [
+    path('break-even/', BreakEvenStartView.as_view(), name='break-even-start'),
+    path('break-even/<uuid:run_id>/', BreakEvenStatusView.as_view(), name='break-even-status'),
     path('imported-heating/', ImportedHeatingView.as_view()),
     path("pipe-sensitivity/", PipeSensitivityStartView.as_view()),
     path("pipe-sensitivity/<uuid:run_id>/", PipeSensitivityStatusView.as_view()),

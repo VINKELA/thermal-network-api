@@ -1,4 +1,5 @@
 from celery import shared_task
+from .break_even_tasks import run_break_even_study  # Register with Celery task discovery.
 from django.db import transaction
 from django.db.models import Q
 from .models import Building, Project, LoadProfile, Network, Node
